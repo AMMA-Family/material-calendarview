@@ -8,6 +8,7 @@ import java.util.Properties
 
 plugins {
     id("com.android.library")
+    kotlin("android")
     id("maven-publish")
     id("signing")
 }
@@ -30,9 +31,15 @@ android {
         sourceCompatibility = AndroidProject.jvmVersion
         targetCompatibility = AndroidProject.jvmVersion
     }
+    
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
+    implementation(kotlin(module = "stdlib"))
+
     coreLibraryDesugaring(Dependency.desugarJdkLibs)
     implementation(Dependency.AndroidX.appcompat)
     implementation(Dependency.AndroidX.material)

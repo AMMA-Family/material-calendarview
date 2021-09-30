@@ -1,15 +1,14 @@
-package com.prolificinteractive.materialcalendarview;
+package com.prolificinteractive.materialcalendarview
 
-import androidx.core.text.TextUtilsCompat;
-import androidx.core.view.ViewCompat;
-import java.util.Locale;
+import android.util.DisplayMetrics
+import android.util.TypedValue
+import androidx.core.text.TextUtilsCompat
+import java.util.Locale
+import androidx.core.view.ViewCompat
+import kotlin.math.roundToInt
 
-class LocalUtils {
+fun isRTL(locale: Locale = Locale.getDefault()): Boolean =
+    TextUtilsCompat.getLayoutDirectionFromLocale(locale) == ViewCompat.LAYOUT_DIRECTION_RTL
 
-  private LocalUtils() { }
-
-  static boolean isRTL() {
-    return TextUtilsCompat.getLayoutDirectionFromLocale(Locale.getDefault())
-        == ViewCompat.LAYOUT_DIRECTION_RTL;
-  }
-}
+fun Int.dpToPx(displayMetrics: DisplayMetrics): Int =
+    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, toFloat(), displayMetrics).roundToInt()

@@ -1,79 +1,37 @@
-package com.prolificinteractive.materialcalendarview.spans;
+package com.prolificinteractive.materialcalendarview.spans
 
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.text.style.LineBackgroundSpan;
+import android.text.style.LineBackgroundSpan
+import com.prolificinteractive.materialcalendarview.spans.DotSpan
+import android.graphics.Canvas
+import android.graphics.Paint
 
 /**
- * Span to draw a dot centered under a section of text
+ * Span to draw a dot centered under a section of text.
+ * @param color color of the dot.
+ * @param radius radius for the dot.
  */
-public class DotSpan implements LineBackgroundSpan {
-
-  /**
-   * Default radius used
-   */
-  public static final float DEFAULT_RADIUS = 3;
-
-  private final float radius;
-  private final int color;
-
-  /**
-   * Create a span to draw a dot using default radius and color
-   *
-   * @see #DotSpan(float, int)
-   * @see #DEFAULT_RADIUS
-   */
-  public DotSpan() {
-    this.radius = DEFAULT_RADIUS;
-    this.color = 0;
-  }
-
-  /**
-   * Create a span to draw a dot using a specified color
-   *
-   * @param color color of the dot
-   * @see #DotSpan(float, int)
-   * @see #DEFAULT_RADIUS
-   */
-  public DotSpan(int color) {
-    this.radius = DEFAULT_RADIUS;
-    this.color = color;
-  }
-
-  /**
-   * Create a span to draw a dot using a specified radius
-   *
-   * @param radius radius for the dot
-   * @see #DotSpan(float, int)
-   */
-  public DotSpan(float radius) {
-    this.radius = radius;
-    this.color = 0;
-  }
-
-  /**
-   * Create a span to draw a dot using a specified radius and color
-   *
-   * @param radius radius for the dot
-   * @param color color of the dot
-   */
-  public DotSpan(float radius, int color) {
-    this.radius = radius;
-    this.color = color;
-  }
-
-  @Override
-  public void drawBackground(
-      Canvas canvas, Paint paint,
-      int left, int right, int top, int baseline, int bottom,
-      CharSequence charSequence,
-      int start, int end, int lineNum
-  ) {
-    int oldColor = paint.getColor();
-    if (color != 0) {
-      paint.setColor(color);
+class DotSpan @JvmOverloads constructor(
+    private val radius: Float = DEFAULT_RADIUS,
+    private val color: Int = 0
+): LineBackgroundSpan {
+    override fun drawBackground(
+        canvas: Canvas, paint: Paint,
+        left: Int, right: Int, top: Int, baseline: Int, bottom: Int,
+        charSequence: CharSequence,
+        start: Int, end: Int, lineNum: Int
+    ) {
+        val oldColor = paint.color
+        if (color != 0) {
+            paint.color = color
+        }
+        canvas.drawCircle(((left + right) / 2).toFloat(), bottom + radius, radius, paint)
+        paint.color = oldColor
     }
-    canvas.drawCircle((left + right) / 2, bottom + radius, radius, paint);
-    paint.setColor(oldColor);
-  }
+
+    companion object {
+        /**
+         * Default radius used.
+         */
+        const val DEFAULT_RADIUS = 3f
+    }
 }

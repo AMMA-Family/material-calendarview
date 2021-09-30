@@ -22,7 +22,7 @@ abstract class CalendarPagerAdapter<V extends CalendarPagerView> extends PagerAd
 
   private final ArrayDeque<V> currentViews;
 
-  protected final MaterialCalendarView mcv;
+  protected final MaterialCalendarView materialCalendarView;
   private final CalendarDay today;
 
   @NonNull private TitleFormatter titleFormatter = TitleFormatter.DEFAULT;
@@ -43,8 +43,8 @@ abstract class CalendarPagerAdapter<V extends CalendarPagerView> extends PagerAd
   private boolean selectionEnabled = true;
   boolean showWeekDays;
 
-  CalendarPagerAdapter(MaterialCalendarView mcv) {
-    this.mcv = mcv;
+  CalendarPagerAdapter(MaterialCalendarView materialCalendarView) {
+    this.materialCalendarView = materialCalendarView;
     this.today = CalendarDay.today();
     currentViews = new ArrayDeque<>();
     currentViews.iterator();
@@ -140,7 +140,7 @@ abstract class CalendarPagerAdapter<V extends CalendarPagerView> extends PagerAd
   @Override
   public Object instantiateItem(@NonNull ViewGroup container, int position) {
     V pagerView = createView(position);
-    pagerView.setContentDescription(mcv.getCalendarContentDescription());
+    pagerView.setContentDescription(materialCalendarView.getCalendarContentDescription());
     pagerView.setAlpha(0);
     pagerView.setSelectionEnabled(selectionEnabled);
 
@@ -353,7 +353,7 @@ abstract class CalendarPagerAdapter<V extends CalendarPagerView> extends PagerAd
       if ((minDate != null && minDate.isAfter(date)) || (maxDate != null
           && maxDate.isBefore(date))) {
         selectedDates.remove(i);
-        mcv.onDateUnselected(date);
+        materialCalendarView.onDateUnselected(date);
         i -= 1;
       }
     }

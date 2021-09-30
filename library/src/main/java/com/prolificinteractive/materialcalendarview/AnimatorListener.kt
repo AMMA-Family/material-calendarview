@@ -1,21 +1,10 @@
-package com.prolificinteractive.materialcalendarview;
+package com.prolificinteractive.materialcalendarview
 
-import android.animation.Animator;
+import android.animation.Animator
 
-class AnimatorListener implements Animator.AnimatorListener {
-  @Override
-  public void onAnimationStart(Animator animator) {
-  }
-
-  @Override
-  public void onAnimationEnd(Animator animator) {
-  }
-
-  @Override
-  public void onAnimationCancel(Animator animator) {
-  }
-
-  @Override
-  public void onAnimationRepeat(Animator animator) {
-  }
+internal open class AnimatorListener : Animator.AnimatorListener {
+    override fun onAnimationStart(animator: Animator) = Unit
+    override fun onAnimationEnd(animator: Animator) = Unit
+    override fun onAnimationCancel(animator: Animator) = Unit
+    override fun onAnimationRepeat(animator: Animator) = Unit
 }

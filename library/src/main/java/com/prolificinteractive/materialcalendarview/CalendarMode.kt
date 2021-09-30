@@ -1,25 +1,17 @@
-package com.prolificinteractive.materialcalendarview;
+package com.prolificinteractive.materialcalendarview
 
 /**
  * Different Calendar types available for the pager, which will give the amount of weeks visible.
+ * @param visibleWeeksCount Number of visible weeks per calendar mode.
  */
-public enum CalendarMode {
+enum class CalendarMode(val visibleWeeksCount: Int) {
+    /**
+     * Month Mode to display an entire month per page.
+     */
+    MONTHS(6),
 
-  /**
-   * Month Mode to display an entire month per page.
-   */
-  MONTHS(6),
-  /**
-   * Week mode that shows the calendar week by week.
-   */
-  WEEKS(1);
-
-  /**
-   * Number of visible weeks per calendar mode.
-   */
-  final int visibleWeeksCount;
-
-  CalendarMode(int visibleWeeksCount) {
-    this.visibleWeeksCount = visibleWeeksCount;
-  }
+    /**
+     * Week mode that shows the calendar week by week.
+     */
+    WEEKS(1);
 }

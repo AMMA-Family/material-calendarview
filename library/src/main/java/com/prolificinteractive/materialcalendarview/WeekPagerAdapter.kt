@@ -1,85 +1,52 @@
-package com.prolificinteractive.materialcalendarview;
+package com.prolificinteractive.materialcalendarview
 
-import androidx.annotation.NonNull;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.WeekFields;
+import java.time.DayOfWeek
+import java.time.temporal.WeekFields
+import java.time.temporal.ChronoUnit
 
-public class WeekPagerAdapter extends CalendarPagerAdapter<WeekView> {
+class WeekPagerAdapter(materialCalendarView: MaterialCalendarView) : CalendarPagerAdapter<WeekView>(materialCalendarView) {
+    override fun createView(position: Int) = WeekView(
+        view = materialCalendarView,
+        firstViewDay = getItem(position),
+        firstDayOfWeek = materialCalendarView.firstDayOfWeek,
+        showWeekDays = showWeekDays
+    )
 
-  public WeekPagerAdapter(MaterialCalendarView mcv) {
-    super(mcv);
-  }
-
-  @Override
-  protected WeekView createView(int position) {
-    return new WeekView(mcv, getItem(position), mcv.getFirstDayOfWeek(), showWeekDays);
-  }
-
-  @Override
-  protected int indexOf(WeekView view) {
-    CalendarDay week = view.getFirstViewDay();
-    return getRangeIndex().indexOf(week);
-  }
-
-  @Override
-  protected boolean isInstanceOfView(Object object) {
-    return object instanceof WeekView;
-  }
-
-  @Override
-  protected DateRangeIndex createRangeIndex(CalendarDay min, CalendarDay max) {
-    return new Weekly(min, max, mcv.getFirstDayOfWeek());
-  }
-
-  public static class Weekly implements DateRangeIndex {
-
-    /**
-     * Minimum day of the first week to display.
-     */
-    private final CalendarDay min;
-
-    /**
-     * Number of weeks to show.
-     */
-    private final int count;
-
-    /**
-     * First day of the week to base the weeks on.
-     */
-    private final DayOfWeek firstDayOfWeek;
-
-    public Weekly(
-        @NonNull final CalendarDay min,
-        @NonNull final CalendarDay max,
-        final DayOfWeek firstDayOfWeek) {
-      this.firstDayOfWeek = firstDayOfWeek;
-      this.min = getFirstDayOfWeek(min);
-      this.count = indexOf(max) + 1;
+    override fun indexOf(view: WeekView): Int {
+        val week = view.firstViewDay
+        return rangeIndex.indexOf(week)
     }
 
-    @Override public int getCount() {
-      return count;
-    }
+    override fun isInstanceOfView(`object`: Any): Boolean = `object` is WeekView
 
-    @Override public int indexOf(final CalendarDay day) {
-      final WeekFields weekFields = WeekFields.of(firstDayOfWeek, 1);
-      final LocalDate temp = day.getDate().with(weekFields.dayOfWeek(), 1L);
-      return (int) ChronoUnit.WEEKS.between(min.getDate(), temp);
-    }
+    override fun createRangeIndex(min: CalendarDay, max: CalendarDay): DateRangeIndex =
+        Weekly(min, max, materialCalendarView.firstDayOfWeek)
 
-    @Override public CalendarDay getItem(final int position) {
-      return CalendarDay.from(min.getDate().plusWeeks(position));
-    }
+    class Weekly(
+        min: CalendarDay,
+        max: CalendarDay,
+        /** First day of the week to base the weeks on. */
+        private val firstDayOfWeek: DayOfWeek
+    ) : DateRangeIndex {
+        /** Minimum day of the first week to display. */
+        private val min: CalendarDay = getFirstDayOfWeek(min)
 
-    /**
-     * Getting the first day of a week for a specific date based on a specific week day as first
-     * day.
-     */
-    private CalendarDay getFirstDayOfWeek(@NonNull final CalendarDay day) {
-      final LocalDate temp = day.getDate().with(WeekFields.of(firstDayOfWeek, 1).dayOfWeek(), 1L);
-      return CalendarDay.from(temp);
+        /** Number of weeks to show. */
+        override val count: Int = indexOf(max) + 1
+
+        override fun indexOf(day: CalendarDay): Int {
+            val weekFields = WeekFields.of(firstDayOfWeek, 1)
+            val temp = day.date.with(weekFields.dayOfWeek(), 1L)
+            return ChronoUnit.WEEKS.between(min.date, temp).toInt()
+        }
+
+        override fun getItem(position: Int): CalendarDay =
+            CalendarDay(date = min.date.plusWeeks(position.toLong()))
+
+        /**
+         * Getting the first day of a week for a specific date based on a specific week day as first day.
+         */
+        private fun getFirstDayOfWeek(day: CalendarDay) =
+            CalendarDay(date = day.date.with(WeekFields.of(firstDayOfWeek, 1).dayOfWeek(), 1L))
     }
-  }
 }

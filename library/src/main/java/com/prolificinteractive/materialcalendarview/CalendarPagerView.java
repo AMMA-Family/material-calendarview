@@ -17,6 +17,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalField;
 import java.time.temporal.WeekFields;
+import java.util.Locale;
 
 import static com.prolificinteractive.materialcalendarview.MaterialCalendarView.SHOW_DEFAULTS;
 import static com.prolificinteractive.materialcalendarview.MaterialCalendarView.showOtherMonths;
@@ -295,7 +296,7 @@ abstract class CalendarPagerView extends ViewGroup
       final int width = child.getMeasuredWidth();
       final int height = child.getMeasuredHeight();
 
-      if (LocalUtils.isRTL()) {
+      if (ExtensionsKt.isRTL(Locale.getDefault())) {
         child.layout(childRight - width, childTop, childRight, childTop + height);
         childRight -= width;
       } else {

@@ -1,37 +1,31 @@
-package com.prolificinteractive.materialcalendarview;
+package com.prolificinteractive.materialcalendarview
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatTextView;
-import android.view.Gravity;
-import com.prolificinteractive.materialcalendarview.format.WeekDayFormatter;
-import java.time.DayOfWeek;
+import android.annotation.SuppressLint
+import android.content.Context
+import java.time.DayOfWeek
+import androidx.appcompat.widget.AppCompatTextView
+import com.prolificinteractive.materialcalendarview.format.WeekDayFormatter
+import android.view.Gravity
 
 /**
- * Display a day of the week
+ * Display a day of the week.
  */
-@SuppressLint("ViewConstructor") class WeekDayView extends AppCompatTextView {
+@SuppressLint("ViewConstructor")
+internal class WeekDayView(context: Context, dayOfWeek: DayOfWeek?) : AppCompatTextView(context) {
+    init {
+        gravity = Gravity.CENTER
+        textAlignment = TEXT_ALIGNMENT_CENTER
+    }
 
-  private WeekDayFormatter formatter = WeekDayFormatter.DEFAULT;
-  private DayOfWeek dayOfWeek;
+    private var formatter = WeekDayFormatter.DEFAULT
+    private var dayOfWeek: DayOfWeek? = dayOfWeek
+        set(value) {
+            field = value
+            text = formatter.format(value)
+        }
 
-  public WeekDayView(final Context context, final DayOfWeek dayOfWeek) {
-    super(context);
-
-    setGravity(Gravity.CENTER);
-
-    setTextAlignment(TEXT_ALIGNMENT_CENTER);
-    setDayOfWeek(dayOfWeek);
-  }
-
-  public void setWeekDayFormatter(@Nullable final WeekDayFormatter formatter) {
-    this.formatter = formatter == null ? WeekDayFormatter.DEFAULT : formatter;
-    setDayOfWeek(dayOfWeek);
-  }
-
-  public void setDayOfWeek(final DayOfWeek dayOfWeek) {
-    this.dayOfWeek = dayOfWeek;
-    setText(formatter.format(dayOfWeek));
-  }
+    fun setWeekDayFormatter(weekDayFormatter: WeekDayFormatter?) {
+        this.formatter = weekDayFormatter ?: WeekDayFormatter.DEFAULT
+        text = formatter.format(dayOfWeek)
+    }
 }

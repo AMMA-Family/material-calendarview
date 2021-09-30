@@ -1,31 +1,19 @@
-package com.prolificinteractive.materialcalendarview.format;
+package com.prolificinteractive.materialcalendarview.format
 
-import java.time.DayOfWeek;
+import java.time.DayOfWeek
 
 /**
- * Use an array to supply week day labels
+ * Use an array to supply week day labels.
+ * @param weekDayLabels an array of 7 labels, starting with Sunday.
  */
-public class ArrayWeekDayFormatter implements WeekDayFormatter {
-
-  private final CharSequence[] weekDayLabels;
-
-  /**
-   * @param weekDayLabels an array of 7 labels, starting with Sunday
-   */
-  public ArrayWeekDayFormatter(final CharSequence[] weekDayLabels) {
-    if (weekDayLabels == null) {
-      throw new IllegalArgumentException("Cannot be null");
+class ArrayWeekDayFormatter(private val weekDayLabels: Array<CharSequence>) : WeekDayFormatter {
+    init {
+        require(weekDayLabels.size == 7) { "Array must contain exactly 7 elements" }
     }
-    if (weekDayLabels.length != 7) {
-      throw new IllegalArgumentException("Array must contain exactly 7 elements");
-    }
-    this.weekDayLabels = weekDayLabels;
-  }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override public CharSequence format(final DayOfWeek dayOfWeek) {
-    return weekDayLabels[dayOfWeek.getValue() - 1];
-  }
+    /**
+     * {@inheritDoc}
+     */
+    override fun format(dayOfWeek: DayOfWeek): CharSequence =
+        weekDayLabels[dayOfWeek.value - 1]
 }

@@ -1,186 +1,114 @@
-package com.prolificinteractive.materialcalendarview;
+package com.prolificinteractive.materialcalendarview
 
-import android.os.Parcel;
-import android.os.Parcelable;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import java.time.LocalDate;
+import android.os.Parcelable
+import android.os.Parcel
+import java.time.LocalDate
 
 /**
- * An imputable representation of a day on a calendar, based on {@link LocalDate}.
+ * An imputable representation of a day on a calendar, based on [LocalDate].
  */
-public final class CalendarDay implements Parcelable {
+class CalendarDay : Parcelable {
+    /**
+     * Everything is based on this variable for [CalendarDay].
+     */
+    val date: LocalDate
 
-  /**
-   * Everything is based on this variable for {@link CalendarDay}.
-   */
-  @NonNull private final LocalDate date;
-
-  /**
-   * @param year new instance's year
-   * @param month new instance's month as defined by {@linkplain java.util.Calendar}
-   * @param day new instance's day of month
-   */
-  private CalendarDay(final int year, final int month, final int day) {
-    date = LocalDate.of(year, month, day);
-  }
-
-  /**
-   * @param date {@link LocalDate} instance
-   */
-  private CalendarDay(@NonNull final LocalDate date) {
-    this.date = date;
-  }
-
-  /**
-   * Get a new instance set to today
-   *
-   * @return CalendarDay set to today's date
-   */
-  @NonNull public static CalendarDay today() {
-    return from(LocalDate.now());
-  }
-
-  /**
-   * Get a new instance set to the specified day
-   *
-   * @param year new instance's year
-   * @param month new instance's month as defined by {@linkplain java.util.Calendar}
-   * @param day new instance's day of month
-   * @return CalendarDay set to the specified date
-   */
-  @NonNull public static CalendarDay from(int year, int month, int day) {
-    return new CalendarDay(year, month, day);
-  }
-
-  /**
-   * Get a new instance set to the specified day
-   *
-   * @param date {@linkplain LocalDate} to pull date information from. Passing null will return null
-   * @return CalendarDay set to the specified date
-   */
-  public static CalendarDay from(@Nullable LocalDate date) {
-    if (date == null) {
-      return null;
-    }
-    return new CalendarDay(date);
-  }
-
-  /**
-   * Get the year
-   *
-   * @return the year for this day
-   */
-  public int getYear() {
-    return date.getYear();
-  }
-
-  /**
-   * Get the month, represented by values from {@linkplain LocalDate}
-   *
-   * @return the month of the year as defined by {@linkplain LocalDate}
-   */
-  public int getMonth() {
-    return date.getMonthValue();
-  }
-
-  /**
-   * Get the day
-   *
-   * @return the day of the month for this day
-   */
-  public int getDay() {
-    return date.getDayOfMonth();
-  }
-
-  /**
-   * Get this day as a {@linkplain LocalDate}
-   *
-   * @return a date with this days information
-   */
-  @NonNull public LocalDate getDate() {
-    return date;
-  }
-
-  /**
-   * Determine if this day is within a specified range
-   *
-   * @param minDate the earliest day, may be null
-   * @param maxDate the latest day, may be null
-   * @return true if the between (inclusive) the min and max dates.
-   */
-  public boolean isInRange(@Nullable CalendarDay minDate, @Nullable CalendarDay maxDate) {
-    return !(minDate != null && minDate.isAfter(this)) &&
-        !(maxDate != null && maxDate.isBefore(this));
-  }
-
-  /**
-   * Determine if this day is before the given instance
-   *
-   * @param other the other day to test
-   * @return true if this is before other, false if equal or after
-   */
-  public boolean isBefore(@NonNull final CalendarDay other) {
-    return date.isBefore(other.getDate());
-  }
-
-  /**
-   * Determine if this day is after the given instance
-   *
-   * @param other the other day to test
-   * @return true if this is after other, false if equal or before
-   */
-  public boolean isAfter(@NonNull final CalendarDay other) {
-    return date.isAfter(other.getDate());
-  }
-
-  @Override public boolean equals(Object o) {
-    return o instanceof CalendarDay && date.equals(((CalendarDay) o).getDate());
-  }
-
-  @Override
-  public int hashCode() {
-    return hashCode(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
-  }
-
-  private static int hashCode(int year, int month, int day) {
-    //Should produce hashes like "20150401"
-    return (year * 10000) + (month * 100) + day;
-  }
-
-  @Override
-  public String toString() {
-    return "CalendarDay{" + date.getYear() + "-" + date.getMonthValue() + "-"
-        + date.getDayOfMonth() + "}";
-  }
-
-  /*
-   * Parcelable Stuff
-   */
-
-  public CalendarDay(Parcel in) {
-    this(in.readInt(), in.readInt(), in.readInt());
-  }
-
-  @Override
-  public int describeContents() {
-    return 0;
-  }
-
-  @Override
-  public void writeToParcel(Parcel dest, int flags) {
-    dest.writeInt(date.getYear());
-    dest.writeInt(date.getMonthValue());
-    dest.writeInt(date.getDayOfMonth());
-  }
-
-  public static final Creator<CalendarDay> CREATOR = new Creator<CalendarDay>() {
-    public CalendarDay createFromParcel(Parcel in) {
-      return new CalendarDay(in);
+    /**
+     * @param year New instance's year.
+     * @param month New instance's month as defined by [java.util.Calendar].
+     * @param day New instance's day of month.
+     */
+    constructor(year: Int, month: Int, day: Int) {
+        date = LocalDate.of(year, month, day)
     }
 
-    public CalendarDay[] newArray(int size) {
-      return new CalendarDay[size];
+    /**
+     * @param date [LocalDate] instance.
+     */
+    constructor(date: LocalDate) {
+        this.date = date
     }
-  };
+
+    /** The year for this day. */
+    val year: Int get() = date.year
+
+    /** The month, represented by values from [LocalDate]. */
+    val month: Int get() = date.monthValue
+
+    /** The day of the month for this day. */
+    val day: Int get() = date.dayOfMonth
+
+    /**
+     * Determine if this day is within a specified range
+     *
+     * @param minDate the earliest day, may be null
+     * @param maxDate the latest day, may be null
+     * @return true if the between (inclusive) the min and max dates.
+     */
+    fun isInRange(minDate: CalendarDay?, maxDate: CalendarDay?): Boolean {
+        return !(minDate != null && minDate.isAfter(this)) &&
+                !(maxDate != null && maxDate.isBefore(this))
+    }
+
+    /**
+     * Determine if this day is before the given instance
+     *
+     * @param other the other day to test
+     * @return true if this is before other, false if equal or after
+     */
+    fun isBefore(other: CalendarDay): Boolean {
+        return date.isBefore(other.date)
+    }
+
+    /**
+     * Determine if this day is after the given instance
+     *
+     * @param other the other day to test
+     * @return true if this is after other, false if equal or before
+     */
+    fun isAfter(other: CalendarDay): Boolean =
+        date.isAfter(other.date)
+
+    override fun equals(other: Any?): Boolean =
+        other is CalendarDay && date == other.date
+
+    override fun hashCode(): Int =
+        hashCode(date.year, date.monthValue, date.dayOfMonth)
+
+    override fun toString(): String =
+        ("CalendarDay{" + date.year + "-" + date.monthValue + "-"
+                + date.dayOfMonth + "}")
+
+    /* Parcelable Stuff */
+    constructor(`in`: Parcel) : this(`in`.readInt(), `in`.readInt(), `in`.readInt()) {}
+
+    override fun describeContents(): Int = 0
+
+    override fun writeToParcel(dest: Parcel, flags: Int) {
+        dest.writeInt(date.year)
+        dest.writeInt(date.monthValue)
+        dest.writeInt(date.dayOfMonth)
+    }
+
+    companion object {
+        /**
+         * Get a new instance set to today
+         *
+         * @return CalendarDay set to today's date
+         */
+        @JvmStatic
+        fun today(): CalendarDay? =
+            LocalDate.now()?.let(::CalendarDay)
+
+        private fun hashCode(year: Int, month: Int, day: Int): Int {
+            //Should produce hashes like "20150401"
+            return year * 10000 + month * 100 + day
+        }
+
+        @JvmField
+        val CREATOR: Parcelable.Creator<CalendarDay> = object : Parcelable.Creator<CalendarDay> {
+            override fun createFromParcel(`in`: Parcel) =CalendarDay(`in`)
+            override fun newArray(size: Int): Array<CalendarDay?> =arrayOfNulls(size)
+        }
+    }
 }

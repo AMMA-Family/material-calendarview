@@ -1,300 +1,240 @@
-package com.prolificinteractive.materialcalendarview;
+package com.prolificinteractive.materialcalendarview
 
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
-import android.content.Context;
-import android.content.res.ColorStateList;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.RippleDrawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.StateListDrawable;
-import android.graphics.drawable.shapes.OvalShape;
-import android.os.Build;
-import androidx.annotation.NonNull;
-import androidx.appcompat.widget.AppCompatCheckedTextView;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.view.Gravity;
-import android.view.View;
-import com.prolificinteractive.materialcalendarview.MaterialCalendarView.ShowOtherDates;
-import com.prolificinteractive.materialcalendarview.format.DayFormatter;
-import java.util.List;
-
-import static android.view.View.TEXT_ALIGNMENT_CENTER;
-import static com.prolificinteractive.materialcalendarview.MaterialCalendarView.showDecoratedDisabled;
-import static com.prolificinteractive.materialcalendarview.MaterialCalendarView.showOtherMonths;
-import static com.prolificinteractive.materialcalendarview.MaterialCalendarView.showOutOfRange;
+import com.prolificinteractive.materialcalendarview.format.DayFormatter.Companion.DEFAULT
+import android.annotation.SuppressLint
+import androidx.appcompat.widget.AppCompatCheckedTextView
+import android.graphics.drawable.Drawable
+import com.prolificinteractive.materialcalendarview.format.DayFormatter
+import com.prolificinteractive.materialcalendarview.MaterialCalendarView.ShowOtherDates
+import android.text.Spanned
+import android.text.SpannableString
+import android.graphics.Canvas
+import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.OvalShape
+import android.annotation.TargetApi
+import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.Rect
+import android.graphics.drawable.RippleDrawable
+import android.graphics.drawable.StateListDrawable
+import android.os.Build
+import android.view.Gravity
+import kotlin.math.abs
 
 /**
- * Display one day of a {@linkplain MaterialCalendarView}
+ * Display one day of a [MaterialCalendarView]
  */
-@SuppressLint("ViewConstructor") class DayView extends AppCompatCheckedTextView {
+@SuppressLint("ViewConstructor")
+class DayView(context: Context?, day: CalendarDay?) : AppCompatCheckedTextView(context!!) {
+    var date: CalendarDay? = null
+        private set
+    private var selectionColor = Color.GRAY
+    private val fadeTime: Int = resources.getInteger(android.R.integer.config_shortAnimTime)
+    private var customBackground: Drawable? = null
+    private var selectionDrawable: Drawable? = null
+    private var mCircleDrawable: Drawable? = null
+    private var formatter = DEFAULT
+    private var contentDescriptionFormatter: DayFormatter? = formatter
+    private var isInRange = true
+    private var isInMonth = true
+    private var isDecoratedDisabled = false
 
-  private CalendarDay date;
-  private int selectionColor = Color.GRAY;
-
-  private final int fadeTime;
-  private Drawable customBackground = null;
-  private Drawable selectionDrawable;
-  private Drawable mCircleDrawable;
-  private DayFormatter formatter = DayFormatter.DEFAULT;
-  private DayFormatter contentDescriptionFormatter = formatter;
-
-  private boolean isInRange = true;
-  private boolean isInMonth = true;
-  private boolean isDecoratedDisabled = false;
-  @ShowOtherDates
-  private int showOtherDates = MaterialCalendarView.SHOW_DEFAULTS;
-
-  public DayView(Context context, CalendarDay day) {
-    super(context);
-
-    fadeTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-    setSelectionColor(this.selectionColor);
-
-    setGravity(Gravity.CENTER);
-
-    setTextAlignment(TEXT_ALIGNMENT_CENTER);
-
-    setDay(day);
-  }
-
-  public void setDay(CalendarDay date) {
-    this.date = date;
-    setText(getLabel());
-  }
-
-  /**
-   * Set the new label formatter and reformat the current label. This preserves current spans.
-   *
-   * @param formatter new label formatter
-   */
-  public void setDayFormatter(DayFormatter formatter) {
-    this.contentDescriptionFormatter = contentDescriptionFormatter == this.formatter ?
-                                       formatter : contentDescriptionFormatter;
-    this.formatter = formatter == null ? DayFormatter.DEFAULT : formatter;
-    CharSequence currentLabel = getText();
-    Object[] spans = null;
-    if (currentLabel instanceof Spanned) {
-      spans = ((Spanned) currentLabel).getSpans(0, currentLabel.length(), Object.class);
-    }
-    SpannableString newLabel = new SpannableString(getLabel());
-    if (spans != null) {
-      for (Object span : spans) {
-        newLabel.setSpan(span, 0, newLabel.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-      }
-    }
-    setText(newLabel);
-  }
-
-  /**
-   * Set the new content description formatter and reformat the current content description.
-   *
-   * @param formatter new content description formatter
-   */
-  public void setDayFormatterContentDescription(DayFormatter formatter) {
-    this.contentDescriptionFormatter = formatter == null ? this.formatter : formatter;
-    setContentDescription(getContentDescriptionLabel());
-  }
-
-  @NonNull
-  public String getLabel() {
-    return formatter.format(date);
-  }
-
-  @NonNull
-  public String getContentDescriptionLabel() {
-    return contentDescriptionFormatter == null ? formatter.format(date)
-                                               : contentDescriptionFormatter.format(date);
-  }
-
-  public void setSelectionColor(int color) {
-    this.selectionColor = color;
-    regenerateBackground();
-  }
-
-  /**
-   * @param drawable custom selection drawable
-   */
-  public void setSelectionDrawable(Drawable drawable) {
-    if (drawable == null) {
-      this.selectionDrawable = null;
-    } else {
-      this.selectionDrawable = drawable.getConstantState().newDrawable(getResources());
-    }
-    regenerateBackground();
-  }
-
-  /**
-   * @param drawable background to draw behind everything else
-   */
-  public void setCustomBackground(Drawable drawable) {
-    if (drawable == null) {
-      this.customBackground = null;
-    } else {
-      this.customBackground = drawable.getConstantState().newDrawable(getResources());
-    }
-    invalidate();
-  }
-
-  public CalendarDay getDate() {
-    return date;
-  }
-
-  private void setEnabled() {
-    boolean enabled = isInMonth && isInRange && !isDecoratedDisabled;
-    super.setEnabled(isInRange && !isDecoratedDisabled);
-
-    boolean showOtherMonths = showOtherMonths(showOtherDates);
-    boolean showOutOfRange = showOutOfRange(showOtherDates) || showOtherMonths;
-    boolean showDecoratedDisabled = showDecoratedDisabled(showOtherDates);
-
-    boolean shouldBeVisible = enabled;
-
-    if (!isInMonth && showOtherMonths) {
-      shouldBeVisible = true;
+    @ShowOtherDates
+    private var showOtherDates = MaterialCalendarView.SHOW_DEFAULTS
+    fun setDay(date: CalendarDay?) {
+        this.date = date
+        text = label
     }
 
-    if (!isInRange && showOutOfRange) {
-      shouldBeVisible |= isInMonth;
+    /**
+     * Set the new label formatter and reformat the current label. This preserves current spans.
+     *
+     * @param formatter new label formatter
+     */
+    fun setDayFormatter(formatter: DayFormatter?) {
+        contentDescriptionFormatter = if (contentDescriptionFormatter === this.formatter) formatter else contentDescriptionFormatter
+        this.formatter = formatter ?: DEFAULT
+        val currentLabel = text
+        var spans: Array<Any?>? = null
+        if (currentLabel is Spanned) {
+            spans = currentLabel.getSpans(0, currentLabel.length, Any::class.java)
+        }
+        val newLabel = SpannableString(label)
+        if (spans != null) {
+            for (span in spans) {
+                newLabel.setSpan(span, 0, newLabel.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+        }
+        text = newLabel
     }
 
-    if (isDecoratedDisabled && showDecoratedDisabled) {
-      shouldBeVisible |= isInMonth && isInRange;
+    /**
+     * Set the new content description formatter and reformat the current content description.
+     *
+     * @param formatter new content description formatter
+     */
+    fun setDayFormatterContentDescription(formatter: DayFormatter?) {
+        contentDescriptionFormatter = formatter ?: this.formatter
+        contentDescription = contentDescriptionLabel
     }
 
-    if (!isInMonth && shouldBeVisible) {
-      setTextColor(getTextColors().getColorForState(
-          new int[] { -android.R.attr.state_enabled }, Color.GRAY));
-    }
-    setVisibility(shouldBeVisible ? View.VISIBLE : View.INVISIBLE);
-  }
+    val label: String
+        get() = formatter.format(date!!)
+    val contentDescriptionLabel: String
+        get() = if (contentDescriptionFormatter == null) formatter.format(date!!) else contentDescriptionFormatter!!.format(date!!)
 
-  protected void setupSelection(
-      @ShowOtherDates int showOtherDates,
-      boolean inRange,
-      boolean inMonth) {
-    this.showOtherDates = showOtherDates;
-    this.isInMonth = inMonth;
-    this.isInRange = inRange;
-    setEnabled();
-  }
-
-  private final Rect tempRect = new Rect();
-  private final Rect circleDrawableRect = new Rect();
-
-  @Override
-  protected void onDraw(@NonNull Canvas canvas) {
-    if (customBackground != null) {
-      customBackground.setBounds(tempRect);
-      customBackground.setState(getDrawableState());
-      customBackground.draw(canvas);
+    fun setSelectionColor(color: Int) {
+        selectionColor = color
+        regenerateBackground()
     }
 
-    mCircleDrawable.setBounds(circleDrawableRect);
-
-    super.onDraw(canvas);
-  }
-
-  private void regenerateBackground() {
-    if (selectionDrawable != null) {
-      setBackgroundDrawable(selectionDrawable);
-    } else {
-      mCircleDrawable = generateBackground(selectionColor, fadeTime, circleDrawableRect);
-      setBackgroundDrawable(mCircleDrawable);
-    }
-  }
-
-  private static Drawable generateBackground(int color, int fadeTime, Rect bounds) {
-    StateListDrawable drawable = new StateListDrawable();
-    drawable.setExitFadeDuration(fadeTime);
-    drawable.addState(new int[] { android.R.attr.state_checked }, generateCircleDrawable(color));
-    drawable.addState(
-            new int[] { android.R.attr.state_pressed },
-            generateRippleDrawable(color, bounds)
-    );
-
-    drawable.addState(new int[] { }, generateCircleDrawable(Color.TRANSPARENT));
-
-    return drawable;
-  }
-
-  private static Drawable generateCircleDrawable(final int color) {
-    ShapeDrawable drawable = new ShapeDrawable(new OvalShape());
-    drawable.getPaint().setColor(color);
-    return drawable;
-  }
-
-  @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-  private static Drawable generateRippleDrawable(final int color, Rect bounds) {
-    ColorStateList list = ColorStateList.valueOf(color);
-    Drawable mask = generateCircleDrawable(Color.WHITE);
-    RippleDrawable rippleDrawable = new RippleDrawable(list, null, mask);
-    //        API 21
-    if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
-      rippleDrawable.setBounds(bounds);
+    /**
+     * @param drawable custom selection drawable
+     */
+    fun setSelectionDrawable(drawable: Drawable?) {
+        selectionDrawable = drawable?.constantState?.newDrawable(resources)
+        regenerateBackground()
     }
 
-    //        API 22. Technically harmless to leave on for API 21 and 23, but not worth risking for 23+
-    if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP_MR1) {
-      int center = (bounds.left + bounds.right) / 2;
-      rippleDrawable.setHotspotBounds(center, bounds.top, center, bounds.bottom);
+    /**
+     * @param drawable background to draw behind everything else
+     */
+    fun setCustomBackground(drawable: Drawable?) {
+        customBackground = drawable?.constantState?.newDrawable(resources)
+        invalidate()
     }
 
-    return rippleDrawable;
-  }
-
-  /**
-   * @param facade apply the facade to us
-   */
-  void applyFacade(DayViewFacade facade) {
-    this.isDecoratedDisabled = facade.areDaysDisabled();
-    setEnabled();
-
-    setCustomBackground(facade.getBackgroundDrawable());
-    setSelectionDrawable(facade.getSelectionDrawable());
-
-    // Facade has spans
-    List<DayViewFacade.Span> spans = facade.getSpans();
-    if (!spans.isEmpty()) {
-      String label = getLabel();
-      SpannableString formattedLabel = new SpannableString(getLabel());
-      for (DayViewFacade.Span span : spans) {
-        formattedLabel.setSpan(span.span, 0, label.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-      }
-      setText(formattedLabel);
+    private fun setEnabled() {
+        val enabled = isInMonth && isInRange && !isDecoratedDisabled
+        super.setEnabled(isInRange && !isDecoratedDisabled)
+        val showOtherMonths = MaterialCalendarView.showOtherMonths(showOtherDates)
+        val showOutOfRange = MaterialCalendarView.showOutOfRange(showOtherDates) || showOtherMonths
+        val showDecoratedDisabled = MaterialCalendarView.showDecoratedDisabled(showOtherDates)
+        var shouldBeVisible = enabled
+        if (!isInMonth && showOtherMonths) {
+            shouldBeVisible = true
+        }
+        if (!isInRange && showOutOfRange) {
+            shouldBeVisible = shouldBeVisible or isInMonth
+        }
+        if (isDecoratedDisabled && showDecoratedDisabled) {
+            shouldBeVisible = shouldBeVisible or (isInMonth && isInRange)
+        }
+        if (!isInMonth && shouldBeVisible) {
+            setTextColor(textColors.getColorForState(intArrayOf(-android.R.attr.state_enabled), Color.GRAY))
+        }
+        visibility = if (shouldBeVisible) VISIBLE else INVISIBLE
     }
-    // Reset in case it was customized previously
-    else {
-      setText(getLabel());
+
+    fun setupSelection(
+        @ShowOtherDates showOtherDates: Int,
+        inRange: Boolean,
+        inMonth: Boolean
+    ) {
+        this.showOtherDates = showOtherDates
+        isInMonth = inMonth
+        isInRange = inRange
+        setEnabled()
     }
-  }
 
-  @Override
-  protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-    super.onLayout(changed, left, top, right, bottom);
-    calculateBounds(right - left, bottom - top);
-    regenerateBackground();
-  }
-
-  private void calculateBounds(int width, int height) {
-    final int radius = Math.min(height, width);
-    final int offset = Math.abs(height - width) / 2;
-
-    // Lollipop platform bug. Circle drawable offset needs to be half of normal offset
-    final int circleOffset =
-        Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP ? offset / 2 : offset;
-
-    if (width >= height) {
-      tempRect.set(offset, 0, radius + offset, height);
-      circleDrawableRect.set(circleOffset, 0, radius + circleOffset, height);
-    } else {
-      tempRect.set(0, offset, width, radius + offset);
-      circleDrawableRect.set(0, circleOffset, width, radius + circleOffset);
+    private val tempRect = Rect()
+    private val circleDrawableRect = Rect()
+    override fun onDraw(canvas: Canvas) {
+        customBackground?.apply {
+            bounds = tempRect
+            state = drawableState
+            draw(canvas)
+        }
+        mCircleDrawable?.bounds = circleDrawableRect
+        super.onDraw(canvas)
     }
-  }
+
+    private fun regenerateBackground() {
+        background = selectionDrawable ?: generateBackground(selectionColor, fadeTime, circleDrawableRect).also { mCircleDrawable = it }
+    }
+
+    /**
+     * @param facade apply the facade to us
+     */
+    fun applyFacade(facade: DayViewFacade) {
+        isDecoratedDisabled = facade.daysDisabled
+        setEnabled()
+        setCustomBackground(facade.backgroundDrawable)
+        setSelectionDrawable(facade.selectionDrawable)
+
+        // Facade has spans
+        val spans = facade.getSpans()
+        text = if (spans.isNotEmpty()) {
+            val label = label
+            val formattedLabel = SpannableString(label)
+            for (span in spans) {
+                formattedLabel.setSpan(span.span, 0, label.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+            formattedLabel
+        } else {
+            label
+        }
+    }
+
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        calculateBounds(right - left, bottom - top)
+        regenerateBackground()
+    }
+
+    private fun calculateBounds(width: Int, height: Int) {
+        val radius = height.coerceAtMost(width)
+        val offset = abs(height - width) / 2
+
+        // Lollipop platform bug. Circle drawable offset needs to be half of normal offset
+        val circleOffset = if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) offset / 2 else offset
+        if (width >= height) {
+            tempRect[offset, 0, radius + offset] = height
+            circleDrawableRect[circleOffset, 0, radius + circleOffset] = height
+        } else {
+            tempRect[0, offset, width] = radius + offset
+            circleDrawableRect[0, circleOffset, width] = radius + circleOffset
+        }
+    }
+
+    companion object {
+        private fun generateBackground(color: Int, fadeTime: Int, bounds: Rect): Drawable =
+            StateListDrawable().apply {
+                setExitFadeDuration(fadeTime)
+                addState(intArrayOf(android.R.attr.state_checked), generateCircleDrawable(color))
+                addState(
+                    intArrayOf(android.R.attr.state_pressed),
+                    generateRippleDrawable(color, bounds)
+                )
+                addState(intArrayOf(), generateCircleDrawable(Color.TRANSPARENT))
+            }
+
+        private fun generateCircleDrawable(color: Int): Drawable =
+            ShapeDrawable(OvalShape()).apply { paint.color = color  }
+
+        private fun generateRippleDrawable(color: Int, bounds: Rect): Drawable {
+            val list = ColorStateList.valueOf(color)
+            val mask = generateCircleDrawable(Color.WHITE)
+            val rippleDrawable = RippleDrawable(list, null, mask)
+            // API 21
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
+                rippleDrawable.bounds = bounds
+            }
+
+            // API 22. Technically harmless to leave on for API 21 and 23, but not worth risking for 23+
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP_MR1) {
+                val center = (bounds.left + bounds.right) / 2
+                rippleDrawable.setHotspotBounds(center, bounds.top, center, bounds.bottom)
+            }
+            return rippleDrawable
+        }
+    }
+
+    init {
+        setSelectionColor(selectionColor)
+        gravity = Gravity.CENTER
+        textAlignment = TEXT_ALIGNMENT_CENTER
+        setDay(day)
+    }
 }

@@ -1,46 +1,35 @@
-package com.prolificinteractive.materialcalendarview;
+package com.prolificinteractive.materialcalendarview
 
-import android.annotation.SuppressLint;
-import androidx.annotation.NonNull;
-import java.util.Collection;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
+import android.annotation.SuppressLint
+import java.time.DayOfWeek
+import java.time.LocalDate
 
 /**
- * Display a month of {@linkplain DayView}s and
- * seven {@linkplain WeekDayView}s.
+ * Display a month of [DayView]s and
+ * seven [WeekDayView]s.
  */
-@SuppressLint("ViewConstructor") class MonthView extends CalendarPagerView {
-
-  public MonthView(
-      @NonNull final MaterialCalendarView view,
-      final CalendarDay month,
-      final DayOfWeek firstDayOfWeek,
-      final boolean showWeekDays) {
-    super(view, month, firstDayOfWeek, showWeekDays);
-  }
-
-  @Override protected void buildDayViews(
-      final Collection<DayView> dayViews,
-      final LocalDate calendar) {
-    LocalDate temp = calendar;
-    for (int r = 0; r < DEFAULT_MAX_WEEKS; r++) {
-      for (int i = 0; i < DEFAULT_DAYS_IN_WEEK; i++) {
-        addDayView(dayViews, temp);
-        temp = temp.plusDays(1);
-      }
+@SuppressLint("ViewConstructor")
+internal class MonthView(
+    view: MaterialCalendarView,
+    month: CalendarDay,
+    firstDayOfWeek: DayOfWeek,
+    showWeekDays: Boolean
+) : CalendarPagerView(view, month, firstDayOfWeek, showWeekDays) {
+    override fun buildDayViews(dayViews: Collection<DayView>, calendar: LocalDate) {
+        var temp = calendar
+        repeat(DEFAULT_MAX_WEEKS * DEFAULT_DAYS_IN_WEEK) {
+            addDayView(dayViews, temp)
+            temp = temp.plusDays(1)
+        }
     }
-  }
 
-  public CalendarDay getMonth() {
-    return getFirstViewDay();
-  }
+    val month: CalendarDay
+        get() = firstViewDay
 
-  @Override protected boolean isDayEnabled(final CalendarDay day) {
-    return day.getMonth() == getFirstViewDay().getMonth();
-  }
+    override fun isDayEnabled(day: CalendarDay): Boolean {
+        return day.month == firstViewDay.month
+    }
 
-  @Override protected int getRows() {
-    return showWeekDays ? DEFAULT_MAX_WEEKS + DAY_NAMES_ROW : DEFAULT_MAX_WEEKS;
-  }
+    override fun getRows(): Int =
+        if (showWeekDays) DEFAULT_MAX_WEEKS + DAY_NAMES_ROW else DEFAULT_MAX_WEEKS
 }

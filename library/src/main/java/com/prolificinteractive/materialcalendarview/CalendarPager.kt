@@ -1,68 +1,39 @@
-package com.prolificinteractive.materialcalendarview;
+package com.prolificinteractive.materialcalendarview
 
-import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.viewpager.widget.ViewPager;
-import android.util.AttributeSet;
-import android.view.MotionEvent;
+import android.content.Context
+import androidx.viewpager.widget.ViewPager
+import android.util.AttributeSet
+import android.view.MotionEvent
 
 /**
  * Custom ViewPager that allows swiping to be disabled.
  */
-class CalendarPager extends ViewPager {
-
-  private boolean pagingEnabled = true;
-
-  public CalendarPager(@NonNull final Context context) {
-    super(context);
-  }
-
-  public CalendarPager(@NonNull final Context context, @Nullable final AttributeSet attrs) {
-    super(context, attrs);
-  }
-
-  /**
-   * enable disable viewpager scroll
-   *
-   * @param pagingEnabled false to disable paging, true for paging (default)
-   */
-  public void setPagingEnabled(boolean pagingEnabled) {
-    this.pagingEnabled = pagingEnabled;
-  }
-
-  /**
-   * @return is this viewpager allowed to page
-   */
-  public boolean isPagingEnabled() {
-    return pagingEnabled;
-  }
-
-  @Override
-  public boolean onInterceptTouchEvent(MotionEvent ev) {
-    return pagingEnabled && super.onInterceptTouchEvent(ev);
-  }
-
-  @Override
-  public boolean onTouchEvent(MotionEvent ev) {
-    return pagingEnabled && super.onTouchEvent(ev);
-  }
-
-  @Override
-  public boolean canScrollVertically(int direction) {
+internal class CalendarPager @JvmOverloads constructor(
+    context: Context, attrs: AttributeSet? = null
+) : ViewPager(context, attrs) {
     /**
-     * disables scrolling vertically when paging disabled, fixes scrolling
-     * for nested {@link androidx.viewpager.widget.ViewPager}
+     * Enable disable viewpager scroll.
+     * false to disable paging, true for paging (default)
      */
-    return pagingEnabled && super.canScrollVertically(direction);
-  }
+    var isPagingEnabled = true
 
-  @Override
-  public boolean canScrollHorizontally(int direction) {
+    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+        return isPagingEnabled && super.onInterceptTouchEvent(ev)
+    }
+
+    override fun onTouchEvent(ev: MotionEvent): Boolean {
+        return isPagingEnabled && super.onTouchEvent(ev)
+    }
+
     /**
-     * disables scrolling horizontally when paging disabled, fixes scrolling
-     * for nested {@link androidx.viewpager.widget.ViewPager}
+     * Disables scrolling vertically when paging disabled, fixes scrolling for nested [androidx.viewpager.widget.ViewPager].
      */
-    return pagingEnabled && super.canScrollHorizontally(direction);
-  }
+    override fun canScrollVertically(direction: Int): Boolean =
+        isPagingEnabled && super.canScrollVertically(direction)
+
+    /**
+     * Disables scrolling horizontally when paging disabled, fixes scrolling for nested [androidx.viewpager.widget.ViewPager].
+     */
+    override fun canScrollHorizontally(direction: Int): Boolean =
+        isPagingEnabled && super.canScrollHorizontally(direction)
 }

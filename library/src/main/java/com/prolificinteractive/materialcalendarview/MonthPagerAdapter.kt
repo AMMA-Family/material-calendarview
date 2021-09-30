@@ -1,63 +1,41 @@
-package com.prolificinteractive.materialcalendarview;
+package com.prolificinteractive.materialcalendarview
 
-import androidx.annotation.NonNull;
-import java.time.Period;
+import java.time.Period
 
 /**
  * Pager adapter backing the calendar view
  */
-class MonthPagerAdapter extends CalendarPagerAdapter<MonthView> {
+internal class MonthPagerAdapter(materialCalendarView: MaterialCalendarView) : CalendarPagerAdapter<MonthView>(materialCalendarView) {
+    override fun createView(position: Int) = MonthView(
+        view = materialCalendarView,
+        month = getItem(position), firstDayOfWeek = materialCalendarView.firstDayOfWeek,
+        showWeekDays = showWeekDays
+    )
 
-  MonthPagerAdapter(MaterialCalendarView mcv) {
-    super(mcv);
-  }
-
-  @Override protected MonthView createView(int position) {
-    return new MonthView(mcv, getItem(position), mcv.getFirstDayOfWeek(), showWeekDays);
-  }
-
-  @Override protected int indexOf(MonthView view) {
-    CalendarDay month = view.getMonth();
-    return getRangeIndex().indexOf(month);
-  }
-
-  @Override protected boolean isInstanceOfView(Object object) {
-    return object instanceof MonthView;
-  }
-
-  @Override protected DateRangeIndex createRangeIndex(CalendarDay min, CalendarDay max) {
-    return new Monthly(min, max);
-  }
-
-  public static class Monthly implements DateRangeIndex {
-
-    /**
-     * Minimum date with the first month to display.
-     */
-    private final CalendarDay min;
-
-    /**
-     * Number of months to display.
-     */
-    private final int count;
-
-    public Monthly(@NonNull final CalendarDay min, @NonNull final CalendarDay max) {
-      this.min = CalendarDay.from(min.getYear(), min.getMonth(), 1);
-      this.count = indexOf(max) + 1;
+    override fun indexOf(view: MonthView): Int {
+        val month = view.month
+        return rangeIndex.indexOf(month)
     }
 
-    @Override public int getCount() {
-      return count;
-    }
+    override fun isInstanceOfView(`object`: Any): Boolean = `object` is MonthView
 
-    @Override public int indexOf(final CalendarDay day) {
-      return (int) Period
-          .between(min.getDate().withDayOfMonth(1), day.getDate().withDayOfMonth(1))
-          .toTotalMonths();
-    }
+    override fun createRangeIndex(min: CalendarDay, max: CalendarDay): DateRangeIndex =
+        Monthly(min, max)
 
-    @Override public CalendarDay getItem(final int position) {
-      return CalendarDay.from(min.getDate().plusMonths(position));
+    class Monthly(min: CalendarDay, max: CalendarDay) : DateRangeIndex {
+        /** Number of months to display. */
+        override val count: Int = indexOf(max) + 1
+
+        /** Minimum date with the first month to display. */
+        private val min = CalendarDay(min.year, min.month, day = 1)
+
+        override fun indexOf(day: CalendarDay): Int =
+            Period
+                .between(min.date.withDayOfMonth(1), day.date.withDayOfMonth(1))
+                .toTotalMonths()
+                .toInt()
+
+        override fun getItem(position: Int): CalendarDay =
+            CalendarDay(date = min.date.plusMonths(position.toLong()))
     }
-  }
 }
